@@ -1,0 +1,20 @@
+{
+  "name": "iuc-kampus",
+  "version": "1.0.0",
+  "description": "İstanbul Üniversitesi-Cerrahpaşa Kampüs Platformu",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "build": "cd client && npm run build",
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install"
+  },
+  "keywords": ["iuc", "kampüs", "öğrenci", "platform"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
+
+

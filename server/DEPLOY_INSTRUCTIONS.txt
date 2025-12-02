@@ -1,0 +1,54 @@
+==========================================
+İUC KAMPÜS - SERVER DEPLOYMENT TALİMATLARI
+==========================================
+
+Bu dosyalar hosting'e yüklendikten sonra yapılacaklar:
+
+1. TERMINAL/SSH ERİŞİMİ AÇIN
+   - Hosting panelinizden Terminal/SSH erişimini açın
+   - veya hosting desteğinden yardım isteyin
+
+2. SERVER KLASÖRÜNE GİDİN
+   cd public_html/server
+   (veya dosyalarınızın yüklendiği klasör)
+
+3. BAĞIMLILIKLARI YÜKLEYİN
+   npm install
+
+4. VERİTABANINI OLUŞTURUN
+   node init-db.js
+
+5. UYGULAMAYI BAŞLATIN
+   node server.js
+   
+   VEYA PM2 İLE (Önerilen):
+   npm install -g pm2
+   pm2 start server.js --name iuc-kampus
+   pm2 save
+
+6. ENVIRONMENT VARIABLES AYARLAYIN
+   Hosting panelinden veya .env dosyası oluşturarak:
+   
+   NODE_ENV=production
+   PORT=5001
+   JWT_SECRET=<güçlü-random-string>
+   FRONTEND_URL=https://your-frontend-domain.com
+
+==========================================
+ÖNEMLİ NOTLAR:
+==========================================
+
+- node_modules klasörünü YÜKLEMEYİN (npm install ile oluşturulacak)
+- database.db dosyasını YÜKLEMEYİN (init-db.js ile oluşturulacak)
+- .env dosyasını asla Git'e commit etmeyin
+
+==========================================
+SORUN GİDERME:
+==========================================
+
+- "npm: command not found" → Node.js yüklü değil, hosting desteğinden isteyin
+- "Port already in use" → Farklı bir port kullanın (PORT=3000)
+- "Permission denied" → Dosya izinlerini kontrol edin (chmod 755)
+
+==========================================
+
