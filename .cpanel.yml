@@ -1,0 +1,12 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=$HOME/public_html
+    - /bin/mkdir -p $DEPLOYPATH/server
+    - /bin/cp -R server/* $DEPLOYPATH/server/
+    - cd $DEPLOYPATH/server
+    - /bin/npm install --production
+    - /bin/node init-db.js || true
+    - /bin/mkdir -p $DEPLOYPATH
+    - /bin/cp -R client/dist/* $DEPLOYPATH/ || true
+
