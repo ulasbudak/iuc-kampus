@@ -7,25 +7,30 @@ const dbGet = promisify(db.get.bind(db))
 const dbRun = promisify(db.run.bind(db))
 
 async function testLogin() {
+  const email = process.env.ADMIN_EMAIL
+  const password = process.env.ADMIN_PASSWORD
+
+  if (!email || !password) {
+    console.error('❌ Set ADMIN_EMAIL and ADMIN_PASSWORD environment variables before running this script.')
+    process.exit(1)
+  }
+
   try {
-    const email = 'serdarulasbudak@gmail.com'
-    const password = '***REMOVED-SECRET***'
-    
     const user = await dbGet('SELECT * FROM users WHERE email = ?', [email])
-    
+
     if (!user) {
       console.log('❌ Kullanıcı bulunamadı')
       db.close()
       return
     }
-    
+
     console.log('✅ Kullanıcı bulundu:', user.email)
     console.log('   Role:', user.role)
     console.log('   Password hash:', user.password.substring(0, 30) + '...')
-    
+
     const isValid = await bcrypt.compare(password, user.password)
     console.log('   Şifre kontrolü:', isValid ? '✅ Doğru' : '❌ Yanlış')
-    
+
     if (!isValid) {
       console.log('\n🔄 Şifreyi güncelliyorum...')
       const newHash = await bcrypt.hash(password, 10)
@@ -34,13 +39,12 @@ async function testLogin() {
         [newHash, email]
       )
       console.log('✅ Şifre güncellendi')
-      
-      // Tekrar test et
+
       const updatedUser = await dbGet('SELECT * FROM users WHERE email = ?', [email])
       const isValidAfter = await bcrypt.compare(password, updatedUser.password)
       console.log('   Yeni şifre kontrolü:', isValidAfter ? '✅ Doğru' : '❌ Yanlış')
     }
-    
+
     db.close()
   } catch (error) {
     console.error('❌ Hata:', error)
@@ -49,4 +53,3 @@ async function testLogin() {
 }
 
 testLogin()
-

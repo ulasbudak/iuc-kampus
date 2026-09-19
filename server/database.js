@@ -147,35 +147,26 @@ export const initDatabase = async () => {
     UPDATE notes SET status = 'approved' WHERE status IS NULL OR status = ''
   `).catch(() => {})
 
-  // Create or update admin user
-  const adminPassword = '***REMOVED-SECRET***'
-  const adminCheck = await dbGet("SELECT * FROM users WHERE email = 'serdarulasbudak@gmail.com'")
-  if (!adminCheck) {
-    const hashedPassword = await bcrypt.hash(adminPassword, 10)
-    await dbRun(
-      "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
-      ['Ulaş/Admin', 'serdarulasbudak@gmail.com', hashedPassword, 'admin']
-    )
-    console.log('✅ Default admin user created: serdarulasbudak@gmail.com')
-  } else {
-    // Update admin password and name
-    const hashedPassword = await bcrypt.hash(adminPassword, 10)
-    await dbRun(
-      "UPDATE users SET name = ?, password = ? WHERE email = ? AND role = 'admin'",
-      ['Ulaş/Admin', hashedPassword, 'serdarulasbudak@gmail.com']
-    )
-    console.log('✅ Admin password and name updated')
-  }
-  
-  // Update existing admin user email if exists
-  const oldAdminCheck = await dbGet("SELECT * FROM users WHERE email = 'admin@iuc.edu.tr'")
-  if (oldAdminCheck && oldAdminCheck.role === 'admin') {
-    const hashedPassword = await bcrypt.hash(adminPassword, 10)
-    await dbRun(
-      "UPDATE users SET name = ?, email = ?, password = ? WHERE email = ?",
-      ['Ulaş/Admin', 'serdarulasbudak@gmail.com', hashedPassword, 'admin@iuc.edu.tr']
-    )
-    console.log('✅ Admin name, email and password updated')
+  // Create or update admin user (opt-in via env vars — no default credentials are seeded)
+  const adminEmail = process.env.ADMIN_EMAIL
+  const adminPassword = process.env.ADMIN_PASSWORD
+  if (adminEmail && adminPassword) {
+    const adminCheck = await dbGet("SELECT * FROM users WHERE email = ?", [adminEmail])
+    if (!adminCheck) {
+      const hashedPassword = await bcrypt.hash(adminPassword, 10)
+      await dbRun(
+        "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+        ['Admin', adminEmail, hashedPassword, 'admin']
+      )
+      console.log(`✅ Admin user created: ${adminEmail}`)
+    } else {
+      const hashedPassword = await bcrypt.hash(adminPassword, 10)
+      await dbRun(
+        "UPDATE users SET password = ? WHERE email = ? AND role = 'admin'",
+        [hashedPassword, adminEmail]
+      )
+      console.log(`✅ Admin password updated: ${adminEmail}`)
+    }
   }
 
   // Insert sample data

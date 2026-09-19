@@ -7,32 +7,35 @@ const dbGet = promisify(db.get.bind(db))
 const dbRun = promisify(db.run.bind(db))
 
 async function createAdmin() {
+  const email = process.env.ADMIN_EMAIL
+  const password = process.env.ADMIN_PASSWORD
+
+  if (!email || !password) {
+    console.error('❌ Set ADMIN_EMAIL and ADMIN_PASSWORD environment variables before running this script.')
+    process.exit(1)
+  }
+
   try {
-    // Check if admin exists
-    const adminCheck = await dbGet("SELECT * FROM users WHERE email = ?", ['serdarulasbudak@gmail.com'])
-    
+    const adminCheck = await dbGet("SELECT * FROM users WHERE email = ?", [email])
+
     if (adminCheck) {
-      // Update existing admin password and name
-      const hashedPassword = await bcrypt.hash('***REMOVED-SECRET***', 10)
+      const hashedPassword = await bcrypt.hash(password, 10)
       await dbRun(
-        "UPDATE users SET name = ?, password = ?, role = ? WHERE email = ?",
-        ['Ulaş/Admin', hashedPassword, 'admin', 'serdarulasbudak@gmail.com']
+        "UPDATE users SET password = ?, role = ? WHERE email = ?",
+        [hashedPassword, 'admin', email]
       )
-      console.log('✅ Admin şifresi ve ismi güncellendi: serdarulasbudak@gmail.com')
+      console.log(`✅ Admin şifresi güncellendi: ${email}`)
     } else {
-      // Create new admin
-      const hashedPassword = await bcrypt.hash('***REMOVED-SECRET***', 10)
+      const hashedPassword = await bcrypt.hash(password, 10)
       await dbRun(
         "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
-        ['Ulaş/Admin', 'serdarulasbudak@gmail.com', hashedPassword, 'admin']
+        ['Admin', email, hashedPassword, 'admin']
       )
-      console.log('✅ Admin kullanıcısı oluşturuldu: serdarulasbudak@gmail.com')
+      console.log(`✅ Admin kullanıcısı oluşturuldu: ${email}`)
     }
-    
+
     console.log('✅ Admin hazır!')
-    console.log('   Email: serdarulasbudak@gmail.com')
-    console.log('   Şifre: ***REMOVED-SECRET***')
-    
+
     db.close()
   } catch (error) {
     console.error('❌ Hata:', error)
@@ -42,4 +45,3 @@ async function createAdmin() {
 }
 
 createAdmin()
-
